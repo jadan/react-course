@@ -1,8 +1,10 @@
 const path = require('path');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
+// function in order to use environment path
 module.exports = (env) => {
   const isProduction = env === 'production';
-
+  const CSSExtract = new ExtractTextPlugin('styles.css');
   return {
     entry: './src/app.js',
     output: {
@@ -16,15 +18,33 @@ module.exports = (env) => {
         exclude: /node_modules/
       }, {
         test: /\.s?css$/,
-        // When using more than one loader.
-        use: [
-          'style-loader',
-          'css-loader',
-          'sass-loader',
-        ]
+        // When using more than one loader use an array
+        // CSSExtract is a plugin to create a stylesheet
+        use: CSSExtract.extract({
+          // convert to object to add options (like sourceMap)
+          // this helps development builds to link to the correct files
+          use: [
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: true
+              }
+            },
+            {
+              loader: 'sass-loader',
+              options: {
+                sourceMap: true
+              }
+            }
+          ]
+        })
       }]
     },
-    devtool: isProduction ? 'source-map' : 'cheap-module-eval-source-map',
+    plugins: [
+      CSSExtract
+    ],
+    // choose sourcemap generation depending on whether this is dev or prod
+    devtool: isProduction ? 'source-map' : 'inline-source-map',
     devServer: {
       contentBase: path.join(__dirname, 'public'),
       historyApiFallback: true
