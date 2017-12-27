@@ -37,6 +37,7 @@ test('should add an expense', () => {
 });
 
 test('should add expense to database and store', async (done) => {
+  console.log(process.env.FIREBASE_API_KEY);
   const store = mockStore({});
   const expenseData = {
     description: 'Mouse',
