@@ -1,14 +1,13 @@
 const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const Dotenv = require('dotenv');
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 if (process.env.NODE_ENV === 'test') {
-  Dotenv.config({ path: '.env.test' });
+  require('dotenv').config({ path: '.env.test' });
 } else if (process.env.NODE_ENV === 'development') {
-  Dotenv.config({ path: '.env.development' });
+  require('dotenv').config({ path: '.env.development' });
 }
 
 // function in order to use environment path
