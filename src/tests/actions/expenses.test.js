@@ -44,7 +44,6 @@ test('should add expense to database and store', async (done) => {
     note: 'This one is better',
     createdAt: 1000
   };
-
   try {
     await store.dispatch(startAddExpense(expenseData));
     const actions = store.getActions();
@@ -62,33 +61,34 @@ test('should add expense to database and store', async (done) => {
     console.log('error fetching from database or dispatching action');
     done();
   }
+  await done();
 });
 
-test('should add default expense to database and store', async (done) => {
-  const store = mockStore({});
-  const expenseDefaults = {
-    description: '',
-    amount: 0,
-    note: '',
-    createdAt: 0
-  };
+// test('should add default expense to database and store', async (done) => {
+//   const store = mockStore({});
+//   const expenseDefaults = {
+//     description: '',
+//     amount: 0,
+//     note: '',
+//     createdAt: 0
+//   };
 
-  try {
-    await store.dispatch(startAddExpense());
-    const actions = store.getActions();
-    expect(actions[0]).toEqual({
-      type: 'ADD_EXPENSE',
-      expense: {
-        id: expect.any(String),
-        ...expenseDefaults
-      }
-    });
-    const snapshot = await database.ref(`expenses/${actions[0].expense.id}`).once('value');
-    expect(snapshot.val()).toEqual(expenseDefaults);
-    done();
-  } catch (e) {
-    console.log('error fetching from database or dispatching action');
-    done();
-  }
-});
+//   try {
+//     await store.dispatch(startAddExpense());
+//     const actions = store.getActions();
+//     expect(actions[0]).toEqual({
+//       type: 'ADD_EXPENSE',
+//       expense: {
+//         id: expect.any(String),
+//         ...expenseDefaults
+//       }
+//     });
+//     const snapshot = await database.ref(`expenses/${actions[0].expense.id}`).once('value');
+//     expect(snapshot.val()).toEqual(expenseDefaults);
+//     done();
+//   } catch (e) {
+//     console.log('error fetching from database or dispatching action');
+//     done();
+//   }
+// });
 /* eslint-enable */
