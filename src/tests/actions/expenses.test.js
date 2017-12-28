@@ -1,13 +1,21 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import { startAddExpense, addExpense, editExpense, removeExpense, setExpenses, startSetExpenses, startRemoveExpense, startEditExpense } from '../../actions/expenses';
+import { startAddExpense,
+  addExpense,
+  editExpense,
+  removeExpense,
+  setExpenses,
+  startSetExpenses,
+  startRemoveExpense,
+  startEditExpense } from '../../actions/expenses';
 import expenses from '../fixtures/expenses';
 import database from '../../firebase/firebase';
 
 // Action generators tests
 /* eslint-disable no-undef */
-const middlewares = [thunk];
-const mockStore = configureStore(middlewares);
+const mockStore = configureStore([thunk]);
+const testUID = 'thisismytestuid';
+const defaultAuthState = { auth: { uid: testUID } };
 
 beforeEach((done) => {
   const expensesData = {};
@@ -18,7 +26,7 @@ beforeEach((done) => {
       description, note, amount, createdAt
     };
   });
-  database.ref('expenses').set(expensesData).then(() => done());
+  database.ref(`users/${testUID}/expenses`).set(expensesData).then(() => done());
 });
 
 test('should set up removeExpense action object', () => {
@@ -49,8 +57,7 @@ test('should add an expense', () => {
 });
 
 test('should add expense to database and store', async (done) => {
-  console.log(process.env.FIREBASE_API_KEY);
-  const store = mockStore({});
+  const store = mockStore(defaultAuthState);
   const expenseData = {
     description: 'Mouse',
     amount: 3000,
@@ -67,7 +74,7 @@ test('should add expense to database and store', async (done) => {
         ...expenseData
       }
     });
-    const snapshot = await database.ref(`expenses/${actions[0].expense.id}`).once('value');
+    const snapshot = await database.ref(`users/${testUID}/expenses/${actions[0].expense.id}`).once('value');
     expect(snapshot.val()).toEqual(expenseData);
     done();
   } catch (e) {
@@ -78,7 +85,7 @@ test('should add expense to database and store', async (done) => {
 });
 
 test('should add default expense to database and store', async (done) => {
-  const store = mockStore({});
+  const store = mockStore(defaultAuthState);
   const expenseDefaults = {
     description: '',
     amount: 0,
@@ -96,7 +103,7 @@ test('should add default expense to database and store', async (done) => {
         ...expenseDefaults
       }
     });
-    const snapshot = await database.ref(`expenses/${actions[0].expense.id}`).once('value');
+    const snapshot = await database.ref(`users/${testUID}/expenses/${actions[0].expense.id}`).once('value');
     expect(snapshot.val()).toEqual(expenseDefaults);
     done();
   } catch (e) {
@@ -114,18 +121,22 @@ test('should setup set expense action object with data', () => {
 });
 
 test('should fetch expenses from firebase', async (done) => {
-  const store = mockStore({});
-  await store.dispatch(startSetExpenses());
-  const actions = store.getActions();
-  expect(actions[0]).toEqual({
-    type: 'SET_EXPENSES',
-    expenses
-  });
-  done();
+  const store = mockStore(defaultAuthState);
+  try {
+    await store.dispatch(startSetExpenses());
+    const actions = store.getActions();
+    expect(actions[0]).toEqual({
+      type: 'SET_EXPENSES',
+      expenses
+    });
+    done();
+  } catch (e) {
+    console.log('error fetching');
+  }
 });
 
 test('should remove expenses from firebase', async (done) => {
-  const store = mockStore({});
+  const store = mockStore(defaultAuthState);
   await store.dispatch(startRemoveExpense(expenses[0]));
   const actions = store.getActions();
   expect(actions[0]).toEqual({
@@ -136,7 +147,7 @@ test('should remove expenses from firebase', async (done) => {
 });
 
 test('should edit expenses from firebase', async (done) => {
-  const store = mockStore({});
+  const store = mockStore(defaultAuthState);
   await store.dispatch(startEditExpense(expenses[0].id, { description: 'updated remotely' }));
   const actions = store.getActions();
   expect(actions[0]).toEqual({
