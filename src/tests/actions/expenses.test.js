@@ -1,6 +1,6 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import { startAddExpense, addExpense, editExpense, removeExpense } from '../../actions/expenses';
+import { startAddExpense, addExpense, editExpense, removeExpense, setExpenses, startSetExpenses } from '../../actions/expenses';
 import expenses from '../fixtures/expenses';
 import database from '../../firebase/firebase';
 
@@ -8,6 +8,18 @@ import database from '../../firebase/firebase';
 /* eslint-disable no-undef */
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
+
+beforeEach((done) => {
+  const expensesData = {};
+  expenses.forEach(({
+    id, description, note, amount, createdAt
+  }) => {
+    expensesData[id] = {
+      description, note, amount, createdAt
+    };
+  });
+  database.ref('expenses').set(expensesData).then(() => done());
+});
 
 test('should set up removeExpense action object', () => {
   const action = removeExpense({ id: '123abc' });
@@ -65,31 +77,50 @@ test('should add expense to database and store', async (done) => {
   await done();
 });
 
-// test('should add default expense to database and store', async (done) => {
-//   const store = mockStore({});
-//   const expenseDefaults = {
-//     description: '',
-//     amount: 0,
-//     note: '',
-//     createdAt: 0
-//   };
+test('should add default expense to database and store', async (done) => {
+  const store = mockStore({});
+  const expenseDefaults = {
+    description: '',
+    amount: 0,
+    note: '',
+    createdAt: 0
+  };
 
-//   try {
-//     await store.dispatch(startAddExpense());
-//     const actions = store.getActions();
-//     expect(actions[0]).toEqual({
-//       type: 'ADD_EXPENSE',
-//       expense: {
-//         id: expect.any(String),
-//         ...expenseDefaults
-//       }
-//     });
-//     const snapshot = await database.ref(`expenses/${actions[0].expense.id}`).once('value');
-//     expect(snapshot.val()).toEqual(expenseDefaults);
-//     done();
-//   } catch (e) {
-//     console.log('error fetching from database or dispatching action');
-//     done();
-//   }
-// });
+  try {
+    await store.dispatch(startAddExpense());
+    const actions = store.getActions();
+    expect(actions[0]).toEqual({
+      type: 'ADD_EXPENSE',
+      expense: {
+        id: expect.any(String),
+        ...expenseDefaults
+      }
+    });
+    const snapshot = await database.ref(`expenses/${actions[0].expense.id}`).once('value');
+    expect(snapshot.val()).toEqual(expenseDefaults);
+    done();
+  } catch (e) {
+    console.log('error fetching from database or dispatching action');
+    done();
+  }
+});
+
+test('should setup set expense action object with data', () => {
+  const action = setExpenses(expenses);
+  expect(action).toEqual({
+    type: 'SET_EXPENSES',
+    expenses
+  });
+});
+
+test('should fetch expenses from firebase', async (done) => {
+  const store = mockStore({});
+  await store.dispatch(startSetExpenses());
+  const actions = store.getActions();
+  expect(actions[0]).toEqual({
+    type: 'SET_EXPENSES',
+    expenses
+  });
+  done();
+});
 /* eslint-enable */
