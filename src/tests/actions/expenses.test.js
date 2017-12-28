@@ -1,6 +1,6 @@
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import { startAddExpense, addExpense, editExpense, removeExpense, setExpenses, startSetExpenses } from '../../actions/expenses';
+import { startAddExpense, addExpense, editExpense, removeExpense, setExpenses, startSetExpenses, startRemoveExpense, startEditExpense } from '../../actions/expenses';
 import expenses from '../fixtures/expenses';
 import database from '../../firebase/firebase';
 
@@ -120,6 +120,31 @@ test('should fetch expenses from firebase', async (done) => {
   expect(actions[0]).toEqual({
     type: 'SET_EXPENSES',
     expenses
+  });
+  done();
+});
+
+test('should remove expenses from firebase', async (done) => {
+  const store = mockStore({});
+  await store.dispatch(startRemoveExpense(expenses[0]));
+  const actions = store.getActions();
+  expect(actions[0]).toEqual({
+    type: 'REMOVE_EXPENSE',
+    id: expenses[0].id
+  });
+  done();
+});
+
+test('should edit expenses from firebase', async (done) => {
+  const store = mockStore({});
+  await store.dispatch(startEditExpense(expenses[0].id, { description: 'updated remotely' }));
+  const actions = store.getActions();
+  expect(actions[0]).toEqual({
+    type: 'EDIT_EXPENSE',
+    id: expenses[0].id,
+    updates: {
+      description: 'updated remotely'
+    }
   });
   done();
 });
