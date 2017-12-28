@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render Header correctly 1`] = `
+<div>
+  Please login.
+  <button
+    onClick={[Function]}
+  >
+    Login
+  </button>
+</div>
+`;
