@@ -1,0 +1,19 @@
+.login-button {
+  color: white;
+  background: $blue;
+  border: none;
+  padding: $small-text;
+  font-size: $small-text;
+  font-weight: 300;
+  display: inline-block;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.button--link{
+  background: none;
+}
+
+.login-button--secondary{
+  background: #888;
+}
